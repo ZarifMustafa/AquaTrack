@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:uuid/uuid.dart';
+import 'dart:math';
 
 class AddMeterPage extends StatefulWidget {
   @override
@@ -11,33 +11,27 @@ class _AddMeterPageState extends State<AddMeterPage> {
   final List<Map<String, dynamic>> _flats = [];
   int _flatCounter = 1;
 
-  String _generateMeterId() {
-    var uuid = Uuid();
-    return uuid.v4();
+  int _generateMeterId() {
+    return Random().nextInt(1000000);
   }
 
-  String _meterId = '';
+  late int _meterId;
 
   @override
   void initState() {
     super.initState();
     _meterId = _generateMeterId();
+    _addFlat(); // Automatically add one flat input field
   }
 
   void _addFlat() {
     setState(() {
       _flats.add({
         'flatNo': _flatCounter++,
+        'houseNo': '',
         'email': '',
         'role': 'Owner',
       });
-    });
-  }
-
-  void _removeFlat(int index) {
-    setState(() {
-      _flats.removeAt(index);
-      _flatCounter--;
     });
   }
 
@@ -69,11 +63,6 @@ class _AddMeterPageState extends State<AddMeterPage> {
                 ),
               ),
               SizedBox(height: 20.0),
-              ElevatedButton(
-                onPressed: _addFlat,
-                child: Text('Add Flat'),
-              ),
-              SizedBox(height: 20.0),
               ListView.builder(
                 shrinkWrap: true,
                 physics: NeverScrollableScrollPhysics(),
@@ -89,6 +78,40 @@ class _AddMeterPageState extends State<AddMeterPage> {
                             'Flat No: ${_flats[index]['flatNo']}',
                             style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
                           ),
+                          TextFormField(
+                            decoration: InputDecoration(
+                              labelText: 'House No',
+                              filled: true,
+                              fillColor: Colors.white,
+                            ),
+                            validator: (value) {
+                              if (value!.isEmpty) {
+                                return 'Please enter a valid house number';
+                              }
+                              return null;
+                            },
+                            onSaved: (value) {
+                              _flats[index]['houseNo'] = value!;
+                            },
+                          ),
+                          SizedBox(height: 10.0),
+                          TextFormField(
+                            decoration: InputDecoration(
+                              labelText: 'Flat No',
+                              filled: true,
+                              fillColor: Colors.white,
+                            ),
+                            validator: (value) {
+                              if (value!.isEmpty) {
+                                return 'Please enter a valid flat number';
+                              }
+                              return null;
+                            },
+                            onSaved: (value) {
+                              _flats[index]['flatNo'] = value!;
+                            },
+                          ),
+                          SizedBox(height: 10.0),
                           TextFormField(
                             decoration: InputDecoration(
                               labelText: 'Resident Email',
@@ -128,12 +151,6 @@ class _AddMeterPageState extends State<AddMeterPage> {
                               _flats[index]['role'] = value!;
                             },
                           ),
-                          SizedBox(height: 10.0),
-                          ElevatedButton(
-                            onPressed: () => _removeFlat(index),
-                            child: Text('Remove Flat'),
-                            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                          ),
                         ],
                       ),
                     ),
@@ -148,7 +165,7 @@ class _AddMeterPageState extends State<AddMeterPage> {
                     // Implement the logic to save meter and flats information
                     print('Meter ID: $_meterId');
                     _flats.forEach((flat) {
-                      print('Flat No: ${flat['flatNo']}, Email: ${flat['email']}, Role: ${flat['role']}');
+                      print('Flat No: ${flat['flatNo']}, House No: ${flat['houseNo']}, Email: ${flat['email']}, Role: ${flat['role']}');
                     });
                   }
                 },
