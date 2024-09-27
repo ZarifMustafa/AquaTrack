@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "923726587011",
+    "firebase_url": "https://aquatrack-cb196-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "aquatrack-cb196",
+    "storage_bucket": "aquatrack-cb196.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:923726587011:android:4d6c102d2e3ea75c33a7b6",
+        "android_client_info": {
+          "package_name": "com.example.water_flow_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC4o_u96susUQY4YMUGnGdsANZ2DzQ96tI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

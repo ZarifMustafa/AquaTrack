@@ -1,7 +1,10 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
 
 class AddMeterPage extends StatefulWidget {
+  const AddMeterPage({super.key});
+
   @override
   _AddMeterPageState createState() => _AddMeterPageState();
 }
@@ -28,35 +31,79 @@ class _AddMeterPageState extends State<AddMeterPage> {
     setState(() {
       _flats.add({
         'flatNo': _flatCounter++,
-        'houseNo': '',
-        'email': '',
-        'role': 'Owner',
+        'houseId': "",
+        'currentResidentEmail': '',
+        'currentResidentRole': 'Owner',
+        'history': [{
+          "date": DateTime.now().toIso8601String(),
+          "volume": 0,
+          "status": "low",
+          "userEmail": "goru@gmail.com",
+        }],
+        "meterId": _meterId,
       });
     });
+  }
+
+  Future<void> addMeter(BuildContext context) async {
+    try {
+      DatabaseReference dbRef = FirebaseDatabase.instance.ref("Meter").child(_meterId.toString());
+      await dbRef.set(_flats[0]);
+
+      DatabaseReference dbRef1 = FirebaseDatabase.instance.ref("House").child(_flats[0]["houseId"]);
+      DatabaseReference dbPush = dbRef1.child("meters");
+      final meterInHouse = {
+        "currentResidentEmail": _flats[0]["currentResidentEmail"],
+        "currentResidentRole": _flats[0]["currentResidentRole"],
+        "flatNo": _flats[0]["flatNo"],
+        "meterId": _meterId,
+      };
+
+      await dbPush.push().set({
+        "meters": meterInHouse,
+      });
+
+      setState(() {
+        _meterId = _generateMeterId();
+      });
+
+      ScaffoldMessenger.of(context.mounted ? context : context)
+          .showSnackBar(const SnackBar(
+        content: Text("Successfully added meter"),
+      ));
+    } catch (e) {
+      ScaffoldMessenger.of(context.mounted ? context : context)
+          .showSnackBar(const SnackBar(
+        content: Text("Failed to add meter"),
+      ));
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Add Meter'),
+        title: const Text('Add Meter'),
       ),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.bottomLeft,
             end: Alignment.topRight,
-            colors: [Colors.blue.shade400, Color.fromARGB(255, 130, 186, 221)], // Gradient colors
+            colors: [
+              Colors.blue.shade400,
+              const Color.fromARGB(255, 130, 186, 221)
+            ], // Gradient colors
           ),
         ),
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
           child: ListView(
             children: [
               Text(
                 'Meter ID: $_meterId',
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 20.0,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
@@ -65,21 +112,17 @@ class _AddMeterPageState extends State<AddMeterPage> {
               SizedBox(height: 20.0),
               ListView.builder(
                 shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
+                physics: const NeverScrollableScrollPhysics(),
                 itemCount: _flats.length,
                 itemBuilder: (context, index) {
                   return Card(
-                    margin: EdgeInsets.symmetric(vertical: 10.0),
+                    margin: const EdgeInsets.symmetric(vertical: 10.0),
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Column(
                         children: [
-                          Text(
-                            'Flat No: ${_flats[index]['flatNo']}',
-                            style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
-                          ),
                           TextFormField(
-                            decoration: InputDecoration(
+                            decoration: const InputDecoration(
                               labelText: 'House No',
                               filled: true,
                               fillColor: Colors.white,
@@ -91,12 +134,12 @@ class _AddMeterPageState extends State<AddMeterPage> {
                               return null;
                             },
                             onSaved: (value) {
-                              _flats[index]['houseNo'] = value!;
+                              _flats[index]['houseId'] = value!;
                             },
                           ),
-                          SizedBox(height: 10.0),
+                          const SizedBox(height: 10.0),
                           TextFormField(
-                            decoration: InputDecoration(
+                            decoration: const InputDecoration(
                               labelText: 'Flat No',
                               filled: true,
                               fillColor: Colors.white,
@@ -111,9 +154,9 @@ class _AddMeterPageState extends State<AddMeterPage> {
                               _flats[index]['flatNo'] = value!;
                             },
                           ),
-                          SizedBox(height: 10.0),
+                          const SizedBox(height: 10.0),
                           TextFormField(
-                            decoration: InputDecoration(
+                            decoration: const InputDecoration(
                               labelText: 'Resident Email',
                               filled: true,
                               fillColor: Colors.white,
@@ -125,17 +168,17 @@ class _AddMeterPageState extends State<AddMeterPage> {
                               return null;
                             },
                             onSaved: (value) {
-                              _flats[index]['email'] = value!;
+                              _flats[index]['currentResidentEmail'] = value!;
                             },
                           ),
-                          SizedBox(height: 10.0),
+                          const SizedBox(height: 10.0),
                           DropdownButtonFormField(
-                            decoration: InputDecoration(
+                            decoration: const InputDecoration(
                               labelText: 'Role',
                               filled: true,
                               fillColor: Colors.white,
                             ),
-                            value: _flats[index]['role'],
+                            value: _flats[index]['currentResidentRole'],
                             items: ['Owner', 'Tenant'].map((role) {
                               return DropdownMenuItem(
                                 value: role,
@@ -144,11 +187,11 @@ class _AddMeterPageState extends State<AddMeterPage> {
                             }).toList(),
                             onChanged: (value) {
                               setState(() {
-                                _flats[index]['role'] = value;
+                                _flats[index]['currentResidentRole'] = value;
                               });
                             },
                             onSaved: (value) {
-                              _flats[index]['role'] = value!;
+                              _flats[index]['currentResidentRole'] = value!;
                             },
                           ),
                         ],
@@ -157,19 +200,19 @@ class _AddMeterPageState extends State<AddMeterPage> {
                   );
                 },
               ),
-              SizedBox(height: 20.0),
+              const SizedBox(
+                height: 20.0,
+              ),
               ElevatedButton(
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
                     _formKey.currentState!.save();
                     // Implement the logic to save meter and flats information
                     print('Meter ID: $_meterId');
-                    _flats.forEach((flat) {
-                      print('Flat No: ${flat['flatNo']}, House No: ${flat['houseNo']}, Email: ${flat['email']}, Role: ${flat['role']}');
-                    });
+                    addMeter(context);
                   }
                 },
-                child: Text('Save Meter'),
+                child: const Text('Save Meter'),
               ),
             ],
           ),

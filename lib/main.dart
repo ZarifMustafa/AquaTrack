@@ -1,8 +1,16 @@
+import 'package:firebase_core/firebase_core.dart';
+import 'package:water_flow_app/components/addMeter.dart';
+import 'firebase_options.dart';
 import 'package:flutter/material.dart';
 import 'package:water_flow_app/components/graph.dart';
 import 'package:water_flow_app/components/home.dart'; // Adjust package name accordingly
 
-void main() => runApp(MyApp());
+Future<void> main() async {
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  runApp(MyApp());
+}
 
 class MyApp extends StatelessWidget {
   @override

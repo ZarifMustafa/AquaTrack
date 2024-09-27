@@ -1,19 +1,38 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:firebase_database/firebase_database.dart';
 
-class TenantPage extends StatelessWidget {
+class TenantPage extends StatefulWidget {
   final String tenantName;
   final double todayUsage;
   final double monthUsage;
 
-  TenantPage({required this.tenantName, required this.todayUsage, required this.monthUsage});
+  const TenantPage({super.key, required this.tenantName, required this.todayUsage, required this.monthUsage});
 
-  final List<double> dailyUsage = [
-    2.5, 3.0, 1.8, 2.2, 2.0, 2.6, 3.1, 2.9, 2.3, 2.7,
-    2.4, 3.0, 2.8, 2.5, 3.2, 2.1, 2.4, 2.7, 3.0, 2.5,
-    2.9, 2.6, 2.3, 3.1, 2.8, 2.5, 2.7, 2.6, 3.0, 2.9
-  ];
-  final List<double> monthlyUsage = [60, 62, 58, 65, 64, 63, 67, 61, 66, 64, 62, 68];
+  @override
+  _TenantPageState createState() => _TenantPageState();
+}
+
+class _TenantPageState extends State<TenantPage> {
+  late double todayUsage;
+
+  @override
+  void initState() {
+    super.initState();
+    todayUsage = widget.todayUsage;
+    _fetchTodayUsage();
+  }
+
+  void _fetchTodayUsage() {
+    final DatabaseReference dbRef = FirebaseDatabase.instance.ref('Tanent');
+    dbRef.child('volume').onValue.listen((event) {
+      final double volume = (event.snapshot.value as num).toDouble();
+      print(volume);
+      setState(() {
+        todayUsage = volume;
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +54,7 @@ class TenantPage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Tenant: $tenantName',
+                'Tenant: ${widget.tenantName}',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 16),
@@ -44,7 +63,7 @@ class TenantPage extends StatelessWidget {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               Text(
-                "This Month's Usage: $monthUsage Liters",
+                "This Month's Usage: ${widget.monthUsage} Liters",
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 32),
@@ -89,6 +108,13 @@ class TenantPage extends StatelessWidget {
       ),
     );
   }
+
+  final List<double> dailyUsage = [
+    2.5, 3.0, 1.8, 2.2, 2.0, 2.6, 3.1, 2.9, 2.3, 2.7,
+    2.4, 3.0, 2.8, 2.5, 3.2, 2.1, 2.4, 2.7, 3.0, 2.5,
+    2.9, 2.6, 2.3, 3.1, 2.8, 2.5, 2.7, 2.6, 3.0, 2.9
+  ];
+  final List<double> monthlyUsage = [60, 62, 58, 65, 64, 63, 67, 61, 66, 64, 62, 68];
 }
 
 class DailyUsageLineChart extends StatelessWidget {
@@ -193,8 +219,8 @@ class MonthlyUsageChart extends StatelessWidget {
                 color: e.value > 65
                     ? Colors.red
                     : e.value > 60
-                        ? Colors.orange
-                        : Colors.green,
+                    ? Colors.orange
+                    : Colors.green,
               ),
             ],
           );
